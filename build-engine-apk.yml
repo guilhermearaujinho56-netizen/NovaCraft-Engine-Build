@@ -1,0 +1,45 @@
+name: Build NovaCraft Java Engine APK (Amethyst base)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout NovaCraft build recipe
+        uses: actions/checkout@v4
+
+      - name: Install Git and Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Clone Amethyst with submodules
+        run: |
+          git clone --recursive https://github.com/AngelAuraMC/Amethyst-Android.git engine
+          cd engine
+          git submodule update --init --recursive
+
+      - name: Build Android launcher engine
+        working-directory: engine
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app_pojavlauncher:assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NovaCraft-Java-Engine-test-APK
+          path: engine/app_pojavlauncher/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
