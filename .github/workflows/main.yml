@@ -31,11 +31,15 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Configure Java 8 for Gradle
+        run: |
+          echo "org.gradle.java.installations.paths=${{ steps.java8.outputs.path }}" >> engine/gradle.properties
+
       - name: Build APK
         working-directory: engine
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon "-Dorg.gradle.java.installations.paths=${{ steps.java8.outputs.path }}" :app_pojavlauncher:assembleDebug
+          ./gradlew --no-daemon :app_pojavlauncher:assembleDebug
 
       - name: Save APK
         uses: actions/upload-artifact@v4
